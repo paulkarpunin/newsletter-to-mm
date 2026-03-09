@@ -14,11 +14,10 @@
 
 ## 🛠 Быстрое развертывание
 
-Для установки на чистый сервер Ubuntu выполните команду (требуется GitHub Personal Access Token для приватного репозитория):
+Для установки на чистый сервер Ubuntu выполните команду 
 
 ```
-bash
-curl -H "Authorization: token YOUR_GITHUB_TOKEN" -sSL [https://raw.githubusercontent.com/paulkarpunin/newsletter-to-mm/main/install.sh](https://raw.githubusercontent.com/paulkarpunin/newsletter-to-mm/main/install.sh) | GH_TOKEN="YOUR_GITHUB_TOKEN" bash
+curl -sSL https://raw.githubusercontent.com/paulkarpunin/newsletter-to-mm/main/install.sh | sudo bash
 ```
 
 ## 📋 Управление системой
