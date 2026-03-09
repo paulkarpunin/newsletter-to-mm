@@ -32,7 +32,7 @@ def write_cron(lines):
         f.writelines(lines)
     os.chmod(CRON_PATH, 0o644)
     # Перезагрузка демона cron для немедленного применения
-    os.system("systemctl reload cron")
+    os.system("systemctl restart cron")
 
 def update_cron_entry(profile_name, time_str, days_str):
     try:
