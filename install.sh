@@ -58,12 +58,12 @@ chmod 700 "$INSTALL_DIR/mattermost_sender.py"
 chmod 700 "$INSTALL_DIR/manager.py"
 chmod 600 "$INSTALL_DIR/config.json"
 
-# 6. Интеграция с системным планировщиком
-echo "[5/6] Инициализация среды для системного cron..."
-if [ ! -f "$CRON_FILE" ]; then
-    echo "# Автоматически сгенерированное расписание для Mattermost Bot" > "$CRON_FILE"
-fi
-chmod 644 "$CRON_FILE"
+echo "[6/6] Создание системной команды 'gomattermost'..."
+cat <<EOF > /usr/local/bin/gomattermost
+#!/bin/bash
+sudo PYTHONIOENCODING=utf-8 /usr/bin/python3 $INSTALL_DIR/manager.py
+EOF
+chmod +x /usr/local/bin/gomattermost
 systemctl restart cron
 
 # 7. Интеграция пользовательского интерфейса (CLI Wrapper)
