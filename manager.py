@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 
 CONFIG_PATH = "/opt/mattermost_bot/config.json"
 CRON_PATH = "/etc/cron.d/mattermost_bot"
@@ -31,7 +32,6 @@ def write_cron(lines):
     with open(CRON_PATH, 'w', encoding='utf-8') as f:
         f.writelines(lines)
     os.chmod(CRON_PATH, 0o644)
-    # Перезагрузка демона cron для немедленного применения
     os.system("systemctl restart cron")
 
 def update_cron_entry(profile_name, time_str, days_str):
@@ -43,7 +43,6 @@ def update_cron_entry(profile_name, time_str, days_str):
         return False
 
     lines = read_cron()
-    # Удаляем старые записи этого профиля
     lines = [line for line in lines if f" {profile_name} " not in line]
     
     if lines and not lines[-1].endswith('\n'):
@@ -113,10 +112,52 @@ def delete_profile(config):
     else:
         print("Ошибка: Профиль не найден.")
 
+def uninstall_system():
+    print("\n[КРИТИЧЕСКАЯ ОПЕРАЦИЯ] Полное удаление интеграции Mattermost Bot с сервера.")
+    print("Будут безвозвратно удалены все настройки, логи, файлы скриптов и расписания.")
+    confirm = input("Вы уверены? Введите слово 'DELETE' (заглавными буквами) для подтверждения: ").strip()
+    
+    if confirm != 'DELETE':
+        print("Удаление отменено.")
+        return
+
+    print("\nИнициализация процесса удаления...")
+    
+    try:
+        # 1. Удаление системного расписания и перезапуск демона
+        if os.path.exists(CRON_PATH):
+            os.remove(CRON_PATH)
+            os.system("systemctl restart cron")
+            print("  [OK] Расписание cron удалено.")
+
+        # 2. Удаление логов
+        log_dir = "/var/log/mattermost_bot"
+        if os.path.exists(log_dir):
+            shutil.rmtree(log_dir)
+            print("  [OK] Директория логов удалена.")
+
+        # 3. Удаление глобальной команды CLI
+        cli_path = "/usr/local/bin/gomattermost"
+        if os.path.exists(cli_path):
+            os.remove(cli_path)
+            print("  [OK] Системная команда 'gomattermost' удалена.")
+
+        # 4. Удаление рабочей директории (исполняемый код и конфигурация)
+        install_dir = "/opt/mattermost_bot"
+        if os.path.exists(install_dir):
+            shutil.rmtree(install_dir)
+            print("  [OK] Рабочая директория и файлы конфигурации удалены.")
+
+        print("\n[УСПЕХ] Система полностью деинсталлирована. Сервер возвращен в исходное состояние.")
+        # Немедленный выход, так как файлы скрипта больше не существуют
+        exit(0)
+
+    except Exception as e:
+        print(f"\n[ОШИБКА] Произошел сбой в процессе удаления: {e}")
+
 def main_menu():
-    # Проверка прав root
     if os.geteuid() != 0:
-        print("[ОШИБКА] Менеджер должен запускаться с правами root (sudo).")
+        print("[ОШИБКА] Менеджер должен запускаться с правами root (через sudo или gomattermost).")
         exit(1)
 
     while True:
@@ -125,12 +166,14 @@ def main_menu():
         print("1. Показать все рассылки")
         print("2. Добавить или изменить рассылку")
         print("3. Удалить рассылку")
+        print("4. [DANGER] Удалить скрипт с сервера")
         print("0. Выход")
         
-        choice = input("Действие (0-3): ").strip()
+        choice = input("Действие (0-4): ").strip()
         if choice == '1': list_profiles(config)
         elif choice == '2': add_or_edit_profile(config)
         elif choice == '3': delete_profile(config)
+        elif choice == '4': uninstall_system()
         elif choice == '0': break
         else: print("Неверный ввод.")
 
