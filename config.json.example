@@ -1,0 +1,6 @@
+{
+    "example_profile": {
+        "webhook_url": "https://mm.example.com/hooks/your-id",
+        "message": "Это пример сообщения. Замените его через команду gomattermost"
+    }
+}
