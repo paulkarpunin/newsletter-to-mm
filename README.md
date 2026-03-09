@@ -1,6 +1,58 @@
-# newsletter-to-mm
-Рассылка сообщений в Mattermost
+# Mattermost Notification System (Ubuntu Edition)
+
+Профессиональное решение для автоматизации рассылок в Mattermost через Webhooks. Система включает в себя транспортный слой на Python, интеграцию с системным планировщиком Cron и интерактивную панель управления (CLI).
+
+## 🚀 Архитектура решения
+
+Система построена по модульному принципу:
+* **Logic Layer**: Python-скрипт для отправки HTTP POST запросов.
+* **Management Layer**: Интерактивный CLI-менеджер для управления профилями и расписанием.
+* **Scheduling Layer**: Системный `cron.d` для обеспечения точности запуска.
+* **Maintenance Layer**: Автоматическая ротация логов через `logrotate`.
+
+---
+
+## 🛠 Быстрое развертывание
+
+Для установки на чистый сервер Ubuntu выполните команду (требуется GitHub Personal Access Token для приватного репозитория):
 
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/paulkarpunin/newsletter-to-mm/main)
+bash
+curl -H "Authorization: token YOUR_GITHUB_TOKEN" -sSL [https://raw.githubusercontent.com/paulkarpunin/newsletter-to-mm/main/install.sh](https://raw.githubusercontent.com/paulkarpunin/newsletter-to-mm/main/install.sh) | GH_TOKEN="YOUR_GITHUB_TOKEN" bash
 ```
+
+## 📋 Управление системой
+После установки управление всеми рассылками осуществляется через единую команду:
+
+```gomattermost```
+
+### Возможности меню:
+Просмотр рассылок: Список всех активных задач и их расписание.
+Добавление/Редактирование: Интерактивный ввод параметров (URL, Текст, Время, Дни).
+Удаление: Выборочное удаление задач из конфига и Cron.Деинсталляция: Полная очистка сервера от всех файлов системы.
+
+## ⚙️ Технические детали
+### Расположение файлов
+- Рабочая директория (скрипты и конфиг)
+```/opt/mattermost_bot/```
+- Файл системного расписания
+```/etc/cron.d/mattermost_bot```
+- Директория логов исполнения
+```/var/log/mattermost_bot/```
+- Глобальная команда вызова меню 
+```/usr/local/bin/gomattermost```
+
+### Безопасность и кодировки
+- Скрипт поддерживает ввод на кириллице (автоопределение UTF-8/CP1251).
+- Доступ к конфигурационному файлу ограничен правами 600 (только root).
+
+## ⚠️ Устранение неполадок
+
+- Если при запуске gomattermost возникает ошибка повреждения JSON, сбросьте конфигурацию командой:
+    ```
+    echo "{}" | sudo tee /opt/mattermost_bot/config.json
+    ```
+- Ручная отправка сообщения вне расписания
+    ```
+    /usr/bin/python3 /opt/mattermost_bot/mattermost_sender.py ИМЯ_ПРОФИЛЯ --config /opt/mattermost_bot/config.json
+    ```
