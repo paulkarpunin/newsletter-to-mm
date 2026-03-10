@@ -58,3 +58,6 @@ gomattermost
     ```
     /usr/bin/python3 /opt/mattermost_bot/mattermost_sender.py ИМЯ_ПРОФИЛЯ --config /opt/mattermost_bot/config.json
     ```
+
+## Лицензия
+MIT
